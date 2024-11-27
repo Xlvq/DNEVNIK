@@ -1,20 +1,20 @@
 from aiogram import Bot, Dispatcher
-from aiogram.types import Message
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
-from router import auth, grades, main
+from app_router import auth_router, grades_router, main_router
 
-# Создаем бота и диспетчер
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 # Регистрация роутеров
-dp.include_router(main.router)
-dp.include_router(auth.router)
-dp.include_router(grades.router)
+dp.include_router(main_router)
+dp.include_router(auth_router)
+dp.include_router(grades_router)
 
 # Запуск бота
 async def main():
+    print("Бот запущен!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
