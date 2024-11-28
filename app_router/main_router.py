@@ -6,21 +6,34 @@ from src.database import SessionLocal, User
 
 main_router = Router()
 
-async def get_db():
+# Функция для получения сессии базы данных
+def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
+# Функция для получения пользователя по user_id
+def get_user(db: Session, user_id: int):
+    return db.query(User).filter(User.user_id == user_id).first()
+
+# Функция для создания нового пользователя
+def create_user(db: Session, user_id: int, name: str, role: str = "student"):
+    db_user = User(user_id=user_id, name=name, role=role)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 @main_router.message(Command(commands=["start"]))
 async def start(message: Message):
-    async for db in get_db():
-        user = db.query(User).filter(User.user_id == message.from_user.id).first()
-        if user:
-            await message.reply(f"Привет, {user.name}! Вы авторизованы как {user.role}.")
-        else:
-            new_user = User(user_id=message.from_user.id, name=message.from_user.full_name, role="student")
-            db.add(new_user)
-            db.commit()
-            await message.reply("Привет! Вы зарегистрированы как новый пользователь с ролью 'student'.")
+    # Используем обычный синхронный цикл с get_db
+    db = next(get_db())  # Получаем сессию из генератора
+    user = get_user(db, message.from_user.id)
+    if user:
+        await message.reply(f"Привет, {user.name}! Вы авторизованы как {user.role}.")
+    else:
+        # Если пользователь не найден, добавляем его в базу данных
+        new_user = create_user(db, message.from_user.id, message.from_user.full_name, "student")
+        await message.reply(f"Привет, {new_user.name}! Вы зарегистрированы как новый пользователь с ролью 'student'.")

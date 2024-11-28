@@ -1,35 +1,37 @@
-import sqlite3
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 
-# Настроим базу данных с использованием SQLite
-DATABASE_URL = "sqlite:///./database.db"
+DATABASE_URL = "sqlite:///./test.db"  # Путь к вашей базе данных
 
-# Настройка базы данных
+# Создаем движок и сессию
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
-# Таблица пользователей
+# Определение модели пользователя
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, unique=True, index=True)
-    name = Column(String)
-    role = Column(String, default="student")  # Новое поле для роли
+    name = Column(String, nullable=False)
+    role = Column(String, default="student")
 
-# Таблица оценок
+    # Связь с оценками
+    grades = relationship("Grade", back_populates="user")
+
+
+# Определение модели оценки
 class Grade(Base):
     __tablename__ = "grades"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer)
-    subject = Column(String)
+    user_id = Column(Integer, ForeignKey("users.user_id"))
+    subject = Column(String, index=True)
     grade = Column(Integer)
 
+    user = relationship("User", back_populates="grades")
+
 # Создание всех таблиц
-def init_db():
-    Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)

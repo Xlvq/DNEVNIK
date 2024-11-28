@@ -1,22 +1,21 @@
-import sqlite3
+from sqlalchemy.orm import Session
+from src.database import User, SessionLocal
 
-# Подключаемся к базе данных
-conn = sqlite3.connect('database.db')
-cursor = conn.cursor()
+def set_admin(user_id: int):
+    db = SessionLocal()
+    try:
+        # Найдем пользователя по user_id
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if user:
+            user.role = "admin"  # Устанавливаем роль admin
+            db.commit()  # Сохраняем изменения
+            print(f"Роль пользователя {user.name} изменена на admin.")
+        else:
+            print(f"Пользователь с ID {user_id} не найден.")
+    except Exception as e:
+        print(f"Ошибка при обновлении роли: {e}")
+    finally:
+        db.close()
 
-# Задайте ваш user_id (например, 1284813556)
-user_id = 1284813556
-
-# Обновляем роль пользователя на 'admin'
-cursor.execute("UPDATE users SET role = 'admin' WHERE user_id = ?", (user_id,))
-
-# Сохраняем изменения
-conn.commit()
-
-# Проверим, что роль обновлена
-cursor.execute("SELECT user_id, name, role FROM users WHERE user_id = ?", (user_id,))
-user = cursor.fetchone()
-print(f"User ID: {user[0]}, Name: {user[1]}, Role: {user[2]}")
-
-# Закрываем соединение
-conn.close()
+# Пример вызова функции для вашего user_id
+set_admin(1284813556)  # Замените на ваш реальный user_id
