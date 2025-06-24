@@ -29,11 +29,17 @@ def create_user(db: Session, user_id: int, name: str, role: str = "student"):
 @main_router.message(Command(commands=["start"]))
 async def start(message: Message):
     # Используем обычный синхронный цикл с get_db
-    db = next(get_db())  # Получаем сессию из генератора
-    user = get_user(db, message.from_user.id)
-    if user:
-        await message.reply(f"Привет, {user.name}! Вы авторизованы как {user.role}.")
-    else:
-        # Если пользователь не найден, добавляем его в базу данных
-        new_user = create_user(db, message.from_user.id, message.from_user.full_name, "student")
-        await message.reply(f"Привет, {new_user.name}! Вы зарегистрированы как новый пользователь с ролью 'student'.")
+    with SessionLocal() as db:
+        user = get_user(db, message.from_user.id)
+        if user:
+            await message.reply(
+                f"Привет, {user.name}! Вы авторизованы как {user.role}."
+            )
+        else:
+            new_user = create_user(
+                db, message.from_user.id, message.from_user.full_name, "student"
+            )
+            await message.reply(
+                f"Привет, {new_user.name}! Вы зарегистрированы как новый пользователь с ролью 'student'."
+            )
+
