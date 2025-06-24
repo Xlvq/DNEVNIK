@@ -1,9 +1,7 @@
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
-from app_router.auth import router as auth_router
-from app_router.grades import router as grades_router
-from app_router.main_router import main_router as main_router  # Теперь это должно работать
+from app_router import auth_router, grades_router, main_router
 
 bot = Bot(token=BOT_TOKEN)
 storage = MemoryStorage()

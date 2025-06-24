@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Session
 from src.database import User, SessionLocal
+
 
 def set_admin(user_id: int):
     db = SessionLocal()
@@ -17,5 +17,7 @@ def set_admin(user_id: int):
     finally:
         db.close()
 
-# Пример вызова функции для вашего user_id
-set_admin(1284813556)  # Замените на ваш реальный user_id
+
+if __name__ == "__main__":
+    # Пример вызова функции для вашего user_id
+    set_admin(1284813556)  # Замените на ваш реальный user_id
